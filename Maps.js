@@ -105,6 +105,14 @@ class Maps {
       }
     }
   }
-};
+
+  getMaps() {
+    return this.points;
+  }
+
+  getSnakeBody(index) {
+    return this.snakes[index].getBody();
+  }
+}
 
 module.exports = Maps;

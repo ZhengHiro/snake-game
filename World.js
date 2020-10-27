@@ -2,31 +2,36 @@
 const Maps = require('./Maps.js');
 
 class World {
-  constructor({ width, height, timeout = 3000 }) {
+  status = 'created';
+
+  constructor({ width, height, timeout = 3000, players, runnerCb }) {
     this.maps = new Maps(40, 40);
-    this.players = [
-      function() {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve(2);
-          }, 1000);
-        })
-      },
-      function() {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            resolve(4);
-          }, 4000);
-        })
-      },
-    ];
+
+    this.runnerCb = runnerCb;
+    this.players = players;
+    // this.players = [
+    //   function() {
+    //     return new Promise(resolve => {
+    //       setTimeout(() => {
+    //         resolve(2);
+    //       }, 1000);
+    //     })
+    //   },
+    //   function() {
+    //     return new Promise(resolve => {
+    //       setTimeout(() => {
+    //         resolve(4);
+    //       }, 4000);
+    //     })
+    //   },
+    // ];
     this.timeout = timeout; // 3秒后超时
   }
 
   async getPlayerStep(handle) {
     return await Promise.race([
       new Promise((resolve, reject) => {
-        handle().then(direct => {
+        handle.then(direct => {
           if (![1, 2, 3, 4].includes(Number(direct))) {
             let error = new Error('错误方向');
             error.name = 'errorDirect';
@@ -48,8 +53,8 @@ class World {
 
   async runner() {
     let res = await Promise.allSettled([
-      this.getPlayerStep(this.players[0]),
-      this.getPlayerStep(this.players[1])
+      this.getPlayerStep(this.players[0]({ maps: this.maps.getMaps(), body: this.maps.getSnakeBody(0)})),
+      this.getPlayerStep(this.players[1]({ maps: this.maps.getMaps(), body: this.maps.getSnakeBody(1)}))
     ]);
 
     let result;
@@ -66,16 +71,31 @@ class World {
 
     if (!result || result.status === 'end') {
       console.log(result);
+      this.status = 'end';
       return result;
     }
 
+    this.runnerCb();
     this.runner();
   }
 
   start() {
+    this.status = 'running';
     this.runner();
   }
-};
+
+  getStatus() {
+    return this.status;
+  }
+
+  getGameStatus() {
+    return {
+      maps: { width: this.maps.width, height: this.maps.height },
+      snake1: this.maps.getSnakeBody(0),
+      snake2: this.maps.getSnakeBody(1),
+    }
+  }
+}
 
 
 // polyfill Promise allSettled
@@ -115,6 +135,4 @@ Promise.allSettled = Promise.allSettled || function (arr) {
   })
 }
 
-
-let world = new World({ timeout: 3000 });
-world.start();
+module.exports = World;
