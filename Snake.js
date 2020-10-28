@@ -1,5 +1,5 @@
-const directX = [ 0, -1, 0, 1, 0 ];
-const directY = [ 0, 0, 1, 0, -1 ];
+const directY = [ 0, -1, 0, 1, 0 ];
+const directX = [ 0, 0, 1, 0, -1 ];
 
 class Snake {
   body = []; // [{x: 0, y: 0}]
@@ -9,7 +9,7 @@ class Snake {
     this.body.push({ x, y });
   }
 
-  move(direct) { // 朝某个方向移动
+  move(direct, isGrow) { // 朝某个方向移动
     if (!this.isAlive()) return false; // 死掉就不能动了
 
     let header = this.body[0];
@@ -28,7 +28,9 @@ class Snake {
     }
 
     this.body.unshift(newHeader);
-    this.body.pop();
+    if (!isGrow) {
+      this.body.pop();
+    }
 
     return { newHeader, oldTail };
   }
@@ -48,6 +50,6 @@ class Snake {
   getBody() {
     return this.body;
   }
-};
+}
 
 module.exports = Snake;

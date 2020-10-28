@@ -9,12 +9,17 @@ socket.on('connect', () => {
 socket.on('message', (message) => {
   let data = JSON.parse(message);
   if (data.type === 'ACTION') {
-    console.log(data.data.body);
+    console.log('------');
+    let maps = data.data.maps;
+    for (let row of maps) {
+      console.log(row.map(point => point.type).join('|'));
+    }
+    console.log('------');
     socket.send(JSON.stringify({
       type: 'ACTION',
       data: {
-        randomKey: data.data.randomKey,
-        direct: 2
+        actionKey: data.data.actionKey,
+        direct: Math.floor(Math.random() * 2 + 2),
       }
     }));
   }

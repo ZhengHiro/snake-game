@@ -9,11 +9,20 @@
                 'second-header': point.secondHeader,
                 'second-body': point.secondBody,
                 'top': rowIndex === 0,
-                'left': colIndex === 0
+                'left': colIndex === 0,
+                'right': colIndex === row.length - 1,
+                'bottom': rowIndex === points.length - 1,
              }"
              v-for="(point, colIndex) of row" :key="colIndex">
         </div>
       </div>
+
+      <div class="game-tips">
+        <p class="player-one" v-if="playerOne">玩家1: {{ playerOne }} <span class="danger" v-if="reasons && reasons[0]">({{ reasons[0] }})</span></p>
+        <p class="player-two" v-if="playerTwo">玩家2: {{ playerTwo }} <span class="danger" v-if="reasons && reasons[1]">({{ reasons[1] }})</span></p>
+      </div>
+
+      <div @click="() => this.$emit('close')" class="close-btn">关闭</div>
     </div>
   </div>
 </template>
@@ -31,58 +40,114 @@
         width: 0,
         height: 0,
         points: [],
+        playerOne: '',
+        playerTwo: '',
+        timer: null,
+        histories: [],
+        reasons: [],
+        step: 0,
       }
     },
     mounted() {
-      console.log(this.socket, this.gameKey);
-      this.socket.on(this.gameKey, ({ maps, snake1, snake2 }) => {
-        console.log(this.gameKey);
-        console.log({ maps, snake1, snake2 });
-        if (maps.width !== this.width || maps.height !== this.height) {
-          this.initMap(maps.width, maps.height);
+      this.socket.emit('GET_GAME_RESULT', this.gameKey, (res) => {
+        console.log(res);
+        if (res.code !== 200) {
+          alert(res.msg);
+          this.$emit('close');
+        } else {
+          let { mapInfo, playerOne, playerTwo, histories, reasons } = res.data;
+          this.playerOne = playerOne;
+          this.playerTwo = playerTwo;
+          this.histories = histories;
+          this.reasons = reasons;
+          this.initMap(mapInfo.width, mapInfo.height);
         }
-        this.$nextTick(() => {
-          this.setSnakes(snake1, snake2);
-        })
-      })
+      });
+
+      this.timer = setInterval(() => {
+        console.log(this.step);
+        this.goStep();
+      }, 33)
+      // console.log(this.socket, this.gameKey);
+      // this.socket.on(this.gameKey, (data) => {
+      //   console.log(this.gameKey);
+      //   console.log(data);
+        // if (maps.width !== this.width || maps.height !== this.height) {
+        //   this.initMap(maps.width, maps.height);
+        // }
+        // this.setSnakes(snake1, snake2);
+      // })
+    },
+    destroyed() {
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
     methods: {
+      goStep() {
+        const data = this.histories[this.step];
+        if (data) {
+          let { snake1, snake2 } = this.histories[this.step];
+          this.step++;
+          this.setSnakes(snake1, snake2);
+        } else if (this.timer) {
+          clearInterval(this.timer);
+          this.timer = null;
+        }
+      },
+
       initMap(width, height) {
         this.points = [];
         this.width = width;
         this.height = height;
 
-        let points = new Array(height);
+        let points = new Array(height + 2);
         for (let i = 0; i < points.length; i++) {
-          points[i] = new Array(width).fill(0).map(() => { return {} });
+          points[i] = new Array(width + 2).fill(0).map(() => { return {
+            firstHeader: false,
+            firstBody: false,
+            secondHeader: false,
+            secondBody: false,
+          } });
         }
         this.points = points;
       },
+
       setSnakes(snake1, snake2) {
         let points = this.points;
 
         for (let row of points) {
           for (let point of row) {
-            point['firstHeader'] = false;
-            point['firstBody'] = false;
-            point['secondHeader'] = false;
-            point['secondBody'] = false;
+            point.firstHeader && (point.firstHeader = false);
+            point.firstBody && (point.firstBody = false);
+            point.secondHeader && (point.secondHeader = false);
+            point.secondBody && (point.secondBody = false);
           }
         }
+
         snake1.forEach(({ x, y }, index) => {
-          if (index === 0) {
-            points[x][y] && (points[x][y]['firstHeader'] = true);
-          } else {
-            points[x][y] && (points[x][y]['firstBody'] = true);
-          }
+          // if (x >= 0 && x <= points.length && y >= 0 && y < points[0].length) {
+            if (index === 0) {
+              points[y + 1][x + 1]['firstHeader'] = true;
+              // this.$set(points[y + 1][x + 1], 'firstHeader', true);
+            } else {
+              points[y + 1][x + 1]['firstBody'] = true;
+              // this.$set(points[y + 1][x + 1], 'firstBody', true);
+            }
+          // }
         });
 
         snake2.forEach(({ x, y }, index) => {
-          if (index === 0) {
-            points[x][y] && (points[x][y]['secondHeader'] = true);
-          } else {
-            points[x][y] && (points[x][y]['secondBody'] = true);
-          }
+          // if (x >= 0 && x <= points.length && y >= 0 && y < points[0].length) {
+            if (index === 0) {
+              points[y + 1][x + 1]['secondHeader'] = true;
+              // this.$set(points[y + 1][x + 1], 'secondHeader', true);
+            } else {
+              points[y + 1][x + 1]['secondBody'] = true;
+              // this.$set(points[y + 1][x + 1], 'secondBody', true);
+            }
+          // }
         });
       }
     }
@@ -117,10 +182,20 @@
     position: relative;
   }
   .cell.top {
-    border-top: 1px solid #999;
+    border-top: 1px dotted transparent;
+    border-right: 1px dotted transparent;
   }
   .cell.left {
-    border-left: 1px solid #999;
+    border-left: 1px dotted transparent;
+    border-bottom: 1px dotted transparent;
+  }
+  .cell.bottom {
+    border-bottom: 1px dotted transparent;
+    border-right: 1px dotted transparent;
+  }
+  .cell.right {
+    border-right: 1px dotted transparent;
+    border-bottom: 1px dotted transparent;
   }
   .cell.first-header {
     background: #006FFF;
@@ -133,5 +208,51 @@
   }
   .cell.second-body {
     background: #FFD08C;
+  }
+  .cell.first-header.first-body {
+    background: red;
+  }
+  .cell.first-header.second-header {
+    background: red;
+  }
+  .cell.first-header.second-body {
+    background: red;
+  }
+  .cell.first-body.second-header {
+    background: red;
+  }
+  .cell.first-body.second-body {
+    background: red;
+  }
+  .cell.second-header.second-body {
+    background: red;
+  }
+  .danger {
+    color: red;
+  }
+
+  .game-tips {
+    text-align: left;
+    font-size: 14px;
+    position: relative;
+  }
+  .game-tips p {
+    margin-top: 5px;
+  }
+  .game-tips .player-one {
+    color: #006FFF;
+  }
+  .game-tips .player-two {
+    color: #FF7E44;
+  }
+
+  .close-btn {
+    margin-top: 10px;
+    display: inline-block;
+    border: 1px solid #CCC;
+    padding: 0 4px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 4px;
   }
 </style>

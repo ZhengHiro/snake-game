@@ -13,8 +13,8 @@ socket.on('message', (message) => {
     socket.send(JSON.stringify({
       type: 'ACTION',
       data: {
-        randomKey: data.data.randomKey,
-        direct: 4
+        actionKey: data.data.actionKey,
+        direct: Math.round(Math.random()) ? 1 : 4,
       }
     }));
   }

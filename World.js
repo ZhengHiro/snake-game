@@ -2,13 +2,18 @@
 const Maps = require('./Maps.js');
 
 class World {
-  status = 'created';
+  status = 'created'; // created  running  end
+  winner = 0; // 0 未决出胜者  -1 平局  1 玩家1胜  2 玩家2胜
+  round = 0; // 轮次
+  reasons = null; // 结束原因
 
-  constructor({ width, height, timeout = 3000, players, runnerCb }) {
-    this.maps = new Maps(40, 40);
+  constructor({ width, height, timeout = 3000, growStep = 3, players, runnerCb }) {
+    this.maps = new Maps(width, height);
 
-    this.runnerCb = runnerCb;
-    this.players = players;
+    this.timeout = timeout; // 超时时间
+    this.runnerCb = runnerCb; // 每轮runner后回调
+    this.players = players; // 玩家列表
+    this.growStep = growStep; // 多少步成长
     // this.players = [
     //   function() {
     //     return new Promise(resolve => {
@@ -25,9 +30,20 @@ class World {
     //     })
     //   },
     // ];
-    this.timeout = timeout; // 3秒后超时
   }
 
+  getGameStatus() {
+    return {
+      status: this.status,
+      winner: this.winner,
+      round: this.round,
+      snake1: this.maps.getSnakeBody(0),
+      snake2: this.maps.getSnakeBody(1),
+      reasons: this.reasons,
+    }
+  }
+
+  // 控制超时，handle为一个玩家promise
   async getPlayerStep(handle) {
     return await Promise.race([
       new Promise((resolve, reject) => {
@@ -52,26 +68,32 @@ class World {
   }
 
   async runner() {
+    this.round++;
     let res = await Promise.allSettled([
-      this.getPlayerStep(this.players[0]({ maps: this.maps.getMaps(), body: this.maps.getSnakeBody(0)})),
-      this.getPlayerStep(this.players[1]({ maps: this.maps.getMaps(), body: this.maps.getSnakeBody(1)}))
+      this.getPlayerStep(this.players[0]({ round: this.round, maps: this.maps.getMaps(), body: this.maps.getSnakeBody(0)})),
+      this.getPlayerStep(this.players[1]({ round: this.round, maps: this.maps.getMaps(), body: this.maps.getSnakeBody(1)}))
     ]);
 
     let result;
     if (res[0].status === 'rejected' && res[1].status === 'rejected') {
-      result = { status: 'end', winner: -1, reasons: [res[0].reason, res[1].reason]};
+      result = { status: 'end', winner: -1, reasons: [res[0].reason, res[1].reason]}; // 平局
     } else if (res[0].status === 'rejected') {
-      result = { status: 'end', winner: 1, reasons: [res[0].reason, '']};
+      result = { status: 'end', winner: 1, reasons: [res[0].reason, '']}; // 玩家1胜
     } else if (res[1].status === 'rejected') {
-      result = { status: 'end', winner: 0, reasons: [res[1].reason, '']};
+      result = { status: 'end', winner: 2, reasons: ['', res[1].reason]}; // 玩家2胜
     } else {
       let directs = res.map(data => data.value);
-      result = this.maps.moveSnakes(directs);
+
+      let isGrow = !(this.round % this.growStep);
+      result = this.maps.moveSnakes(directs, isGrow);
     }
 
     if (!result || result.status === 'end') {
       console.log(result);
       this.status = 'end';
+      this.winner = result.winner;
+      this.reasons = result.reasons;
+      this.runnerCb();
       return result;
     }
 
@@ -81,21 +103,11 @@ class World {
 
   start() {
     this.status = 'running';
+    this.runnerCb();
     this.runner();
   }
-
-  getStatus() {
-    return this.status;
-  }
-
-  getGameStatus() {
-    return {
-      maps: { width: this.maps.width, height: this.maps.height },
-      snake1: this.maps.getSnakeBody(0),
-      snake2: this.maps.getSnakeBody(1),
-    }
-  }
 }
+
 
 
 // polyfill Promise allSettled

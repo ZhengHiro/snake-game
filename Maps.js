@@ -4,7 +4,7 @@ const Snake = require('./Snake.js');
 class Point {
   x;
   y;
-  type = 0; // 0 空地  1 蛇  2 食物   3 墙
+  type = 0; // 0 空地  1蛇 2蛇 3食物  4墙
 
   constructor(x, y) {
     this.x = x;
@@ -33,9 +33,9 @@ class Maps {
     this.snakes = [];
 
     this.points = [];
-    for (let i = 0; i < height; i++) {
+    for (let i = 0; i < width; i++) {
       this.points[i] = [];
-      for (let j = 0; j < width; j++) {
+      for (let j = 0; j < height; j++) {
         this.points[i][j] = new Point(i, j);
       }
     }
@@ -45,21 +45,27 @@ class Maps {
     this.snakes[1] = new Snake({ x: width - 1, y: height - 1 }); // 初始化蛇2
   }
 
-  moveSnakes(directs) {
+  moveSnakes(directs, isGrow) {
+    let reasons = [];
     this.snakes.forEach((snake, index) => {
-      let moveRes = snake.move(directs[index]);
+      let moveRes = snake.move(directs[index], isGrow);
       if (moveRes) {
         let { newHeader, oldTail } = moveRes;
         console.log(newHeader, oldTail);
+        console.log(this.width, this.height);
 
         // 撞墙死
         if (newHeader.x < 0 || newHeader.x >= this.width || newHeader.y < 0 || newHeader.y >= this.height) {
           snake.dead();
+          reasons[index] = '撞墙死掉了';
           return;
         }
 
-        this.points[newHeader.x][newHeader.y] = 1;
-        this.points[oldTail.x][oldTail.y] = 0;
+        // todo: 处理x y 坐标轴问题
+        this.points[newHeader.x][newHeader.y].setType(index+1);
+        if (!isGrow) {
+          this.points[oldTail.x][oldTail.y].setType(0);
+        }
       }
     });
 
@@ -77,6 +83,7 @@ class Maps {
         for (let { x, y } of source.getBody()) {
           if (targetHeader.x === x && targetHeader.y === y) {
             this.snakes[i].dead();
+            reasons[i] = '撞到别人死掉了';
             break;
           }
         }
@@ -92,16 +99,18 @@ class Maps {
     if (survivors.length === 1) {
       return {
         status: 'end',
-        winner: survivors[0], // 胜者
+        winner: survivors[0] + 1, // 胜者
+        reasons,
       }
     } else if (survivors.length === 0) {
       return {
         status: 'end',
         winner: -1, // 平局
+        reasons,
       }
     } else {
       return {
-        status: 'continue', // 继续进行比赛
+        status: 'running', // 继续进行比赛
       }
     }
   }
@@ -111,7 +120,7 @@ class Maps {
   }
 
   getSnakeBody(index) {
-    return this.snakes[index].getBody();
+    return [].concat(this.snakes[index].getBody());
   }
 }
 
