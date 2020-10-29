@@ -73,7 +73,6 @@ class Maps {
           return;
         }
 
-        // todo: 处理x y 坐标轴问题
         this.points[newHeader.x][newHeader.y].setType(index+1);
         if (!isGrow) {
           this.points[oldTail.x][oldTail.y].setType(0);

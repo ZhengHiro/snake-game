@@ -62,13 +62,13 @@
           this.histories = histories;
           this.reasons = reasons;
           this.initMap(mapInfo.width, mapInfo.height, mapInfo.stones || []);
+
+          this.timer = setInterval(() => {
+            console.log(this.step);
+            this.goStep();
+          }, 33);
         }
       });
-
-      this.timer = setInterval(() => {
-        console.log(this.step);
-        this.goStep();
-      }, 33)
       // console.log(this.socket, this.gameKey);
       // this.socket.on(this.gameKey, (data) => {
       //   console.log(this.gameKey);

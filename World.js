@@ -78,12 +78,14 @@ class World {
         mapsInfo: this.maps.getMapsInfo(),
         points: this.maps.getPoints(),
         body: this.maps.getSnakeBody(0),
+        otherSnake: this.maps.getSnakeBody(1),
       })),
       this.getPlayerStep(this.players[1]({
         round: this.round,
         mapsInfo: this.maps.getMapsInfo(),
         points: this.maps.getPoints(),
         body: this.maps.getSnakeBody(1),
+        otherSnake: this.maps.getSnakeBody(0),
       })),
     ]);
 
