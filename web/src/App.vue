@@ -1,37 +1,39 @@
 <template>
   <div id="app">
     <rank-list :users="users"></rank-list>
-    <table style="margin-top: 20px;">
-      <tr>
-        <td></td>
-        <td v-for="user of users" :key="user.name" colspan="5">
-          {{ user.name }}
-        </td>
-      </tr>
-      <tr v-for="rowUser of users" :key="rowUser.name">
-        <td>{{ rowUser.name }}</td>
-        <template v-for="(colUser) of users">
-          <td colspan="5" :key="colUser.name" v-if="colUser === rowUser">---</td>
-          <template v-else>
-            <td v-for="(n,index) in 3" :key="colUser.name + index">
-              <template v-if="games[`${rowUser.name}-${colUser.name}-${index}`]">
-                <span>{{games[`${rowUser.name}-${colUser.name}-${index}`].statusLabel}}</span>
-                <div class="btn-list">
-                  <span class="btn" @click="showGame(`${rowUser.name}-${colUser.name}-${index}`)">查看</span>
-                  <span class="btn btn-danger" @click="play(rowUser.name, colUser.name, index, true)">重赛</span>
-                </div>
-              </template>
-              <template v-else>
-                <span>未比赛</span>
-                <div class="btn-list">
-                  <span class="btn" @click="play(rowUser.name, colUser.name, index)">开始</span>
-                </div>
-              </template>
-            </td>
+    <div class="main-container">
+      <table style="margin-top: 20px;">
+        <tr>
+          <td></td>
+          <td v-for="user of users" :key="user.name" colspan="3">
+            {{ user.name }}
+          </td>
+        </tr>
+        <tr v-for="rowUser of users" :key="rowUser.name">
+          <td>{{ rowUser.name }}</td>
+          <template v-for="(colUser) of users">
+            <td colspan="3" :key="colUser.name" v-if="colUser === rowUser">---</td>
+            <template v-else>
+              <td v-for="(n,index) in 3" :key="colUser.name + index">
+                <template v-if="games[`${rowUser.name}-${colUser.name}-${index}`]">
+                  <span>{{games[`${rowUser.name}-${colUser.name}-${index}`].statusLabel}}</span>
+                  <div class="btn-list">
+                    <span class="btn" @click="showGame(`${rowUser.name}-${colUser.name}-${index}`)">查看</span>
+                    <span class="btn btn-danger" @click="play(rowUser.name, colUser.name, index, true)">重赛</span>
+                  </div>
+                </template>
+                <template v-else>
+                  <span>未比赛</span>
+                  <div class="btn-list">
+                    <span class="btn" @click="play(rowUser.name, colUser.name, index)">开始</span>
+                  </div>
+                </template>
+              </td>
+            </template>
           </template>
-        </template>
-      </tr>
-    </table>
+        </tr>
+      </table>
+    </div>
     <board :socket="this.socket" :gameKey="gameKey" v-if="gameKey" @close="closeBoard"></board>
 <!--    <chess-board v-if="histories" :histories="histories" @close="histories = null"></chess-board>-->
   </div>

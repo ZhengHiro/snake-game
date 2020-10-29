@@ -6,14 +6,16 @@ class World {
   winner = 0; // 0 未决出胜者  -1 平局  1 玩家1胜  2 玩家2胜
   round = 0; // 轮次
   reasons = null; // 结束原因
+  stones = []; // 石头
 
-  constructor({ width, height, timeout = 3000, growStep = 3, players, runnerCb }) {
-    this.maps = new Maps(width, height);
+  constructor({ width, height, stones, timeout = 3000, growStep = 3, players, runnerCb }) {
+    this.maps = new Maps(width, height, stones);
 
     this.timeout = timeout; // 超时时间
     this.runnerCb = runnerCb; // 每轮runner后回调
     this.players = players; // 玩家列表
     this.growStep = growStep; // 多少步成长
+    this.stones = stones;
     // this.players = [
     //   function() {
     //     return new Promise(resolve => {
@@ -34,6 +36,7 @@ class World {
 
   getGameStatus() {
     return {
+      stones: this.stones,
       status: this.status,
       winner: this.winner,
       round: this.round,
@@ -70,8 +73,18 @@ class World {
   async runner() {
     this.round++;
     let res = await Promise.allSettled([
-      this.getPlayerStep(this.players[0]({ round: this.round, maps: this.maps.getMaps(), body: this.maps.getSnakeBody(0)})),
-      this.getPlayerStep(this.players[1]({ round: this.round, maps: this.maps.getMaps(), body: this.maps.getSnakeBody(1)}))
+      this.getPlayerStep(this.players[0]({
+        round: this.round,
+        mapsInfo: this.maps.getMapsInfo(),
+        points: this.maps.getPoints(),
+        body: this.maps.getSnakeBody(0),
+      })),
+      this.getPlayerStep(this.players[1]({
+        round: this.round,
+        mapsInfo: this.maps.getMapsInfo(),
+        points: this.maps.getPoints(),
+        body: this.maps.getSnakeBody(1),
+      })),
     ]);
 
     let result;

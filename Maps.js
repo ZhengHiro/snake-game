@@ -4,7 +4,7 @@ const Snake = require('./Snake.js');
 class Point {
   x;
   y;
-  type = 0; // 0 空地  1蛇 2蛇 3食物  4墙
+  type = 0; // 0 空地 1蛇 2蛇 3石头
 
   constructor(x, y) {
     this.x = x;
@@ -27,7 +27,7 @@ class Maps {
   points;
   snakes = [];
 
-  constructor(width = 40, height = 40) {
+  constructor(width = 40, height = 40, stones = []) {
     this.width = width;
     this.height = height;
     this.snakes = [];
@@ -37,6 +37,11 @@ class Maps {
       this.points[i] = [];
       for (let j = 0; j < height; j++) {
         this.points[i][j] = new Point(i, j);
+      }
+    }
+    for (let { x, y } of stones) {
+      if (this.points[x][y]) {
+        this.points[x][y].setType(3);
       }
     }
 
@@ -58,6 +63,13 @@ class Maps {
         if (newHeader.x < 0 || newHeader.x >= this.width || newHeader.y < 0 || newHeader.y >= this.height) {
           snake.dead();
           reasons[index] = '撞墙死掉了';
+          return;
+        }
+
+        // 撞墙死
+        if (this.points[newHeader.x][newHeader.y].type === 3) {
+          snake.dead();
+          reasons[index] = '撞石头死掉了';
           return;
         }
 
@@ -115,8 +127,15 @@ class Maps {
     }
   }
 
-  getMaps() {
+  getPoints() {
     return this.points;
+  }
+
+  getMapsInfo() {
+    return {
+      width: this.width,
+      height: this.height,
+    }
   }
 
   getSnakeBody(index) {

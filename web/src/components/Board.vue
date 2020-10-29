@@ -8,6 +8,7 @@
                 'first-body': point.firstBody,
                 'second-header': point.secondHeader,
                 'second-body': point.secondBody,
+                'stone': point.isStone,
                 'top': rowIndex === 0,
                 'left': colIndex === 0,
                 'right': colIndex === row.length - 1,
@@ -60,7 +61,7 @@
           this.playerTwo = playerTwo;
           this.histories = histories;
           this.reasons = reasons;
-          this.initMap(mapInfo.width, mapInfo.height);
+          this.initMap(mapInfo.width, mapInfo.height, mapInfo.stones || []);
         }
       });
 
@@ -97,7 +98,7 @@
         }
       },
 
-      initMap(width, height) {
+      initMap(width, height, stones) {
         this.points = [];
         this.width = width;
         this.height = height;
@@ -110,6 +111,9 @@
             secondHeader: false,
             secondBody: false,
           } });
+        }
+        for (let { x, y } of stones) {
+          points[y+1][x+1].isStone = true;
         }
         this.points = points;
       },
@@ -209,24 +213,17 @@
   .cell.second-body {
     background: #FFD08C;
   }
-  .cell.first-header.first-body {
-    background: red;
+  .cell.stone {
+    background: green;
   }
-  .cell.first-header.second-header {
-    background: red;
-  }
-  .cell.first-header.second-body {
-    background: red;
-  }
-  .cell.first-body.second-header {
-    background: red;
-  }
-  .cell.first-body.second-body {
-    background: red;
-  }
-  .cell.second-header.second-body {
-    background: red;
-  }
+  .cell.stone.first-header,
+  .cell.stone.second-header,
+  .cell.first-header.first-body,
+  .cell.first-header.second-header,
+  .cell.first-header.second-body,
+  .cell.first-body.second-header,
+  .cell.first-body.second-body,
+  .cell.second-header.second-body,
   .danger {
     color: red;
   }

@@ -65,9 +65,9 @@ function initAdmin(adminSocket) {
       if (Number(index) === 0) {
         mapInfo = { width: 10, height: 10 };
       } else if (Number(index) === 1) {
-        mapInfo = { width: 10, height: 20 };
+        mapInfo = { width: 10, height: 10, stones: [{"x":7,"y":2},{"x":2,"y":7},{"x":1,"y":5},{"x":8,"y":4},{"x":1,"y":6},{"x":8,"y":3}] };
       } else if (Number(index) === 2) {
-        mapInfo = { width: 20, height: 20 };
+        mapInfo = { width: 20, height: 20, stones: [{"x":5,"y":8},{"x":14,"y":11},{"x":1,"y":17},{"x":18,"y":2},{"x":11,"y":7},{"x":8,"y":12},{"x":12,"y":6},{"x":7,"y":13},{"x":4,"y":15},{"x":15,"y":4},{"x":10,"y":7},{"x":9,"y":12},{"x":8,"y":1},{"x":11,"y":18},{"x":14,"y":1},{"x":5,"y":18},{"x":10,"y":9},{"x":9,"y":10},{"x":17,"y":17},{"x":2,"y":2}] };
       }
     }
     if (!playerOne || !playerTwo) {
@@ -225,3 +225,32 @@ function echoGames(socket) { // 输出所有比赛情况
 
 // app.use(router.routes()).use(router.allowedMethods());
 server.listen(3000);
+
+
+
+
+function _randomStones(width, height, ratio) {
+  let count = Math.floor(width * height * ratio);
+  let set = new Set();
+  let stones = [];
+  while (stones.length < count) {
+    let x = Math.floor(Math.random()*(width - 3) + 1);
+    let y = Math.floor(Math.random()*(height - 3) + 1);
+    let key = `${x}-${y}`;
+    if (!set.has(key)) {
+      stones.push({ x, y });
+      set.add(key);
+    }
+
+    let otherX = width - 1 - x;
+    let otherY = height - 1 - y;
+    let otherKey = `${otherX}-${otherY}`;
+    if (!set.has(otherKey)) {
+      stones.push({ x: otherX, y: otherY });
+      set.add(otherKey);
+    }
+  }
+  return stones;
+}
+// _randomStones(10, 10, 0.05)
+// _randomStones(20, 20, 0.05)
