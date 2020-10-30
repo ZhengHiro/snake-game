@@ -48,6 +48,8 @@ class Maps {
     // 目前只支持两条蛇
     this.snakes[0] = new Snake({ x: 0, y: 0 }); // 初始化蛇1
     this.snakes[1] = new Snake({ x: width - 1, y: height - 1 }); // 初始化蛇2
+    this.points[0][0].setType(1);
+    this.points[width - 1][height - 1].setType(2);
   }
 
   moveSnakes(directs, isGrow) {
