@@ -51,7 +51,6 @@ class Maps {
   }
 
   moveSnakes(directs, isGrow) {
-    let reasons = [];
     this.snakes.forEach((snake, index) => {
       let moveRes = snake.move(directs[index], isGrow);
       if (moveRes) {
@@ -59,24 +58,23 @@ class Maps {
         console.log(newHeader, oldTail);
         console.log(this.width, this.height);
 
+        if (!isGrow) {
+          this.points[oldTail.x][oldTail.y].setType(0);
+        }
+
         // 撞墙死
         if (newHeader.x < 0 || newHeader.x >= this.width || newHeader.y < 0 || newHeader.y >= this.height) {
-          snake.dead();
-          reasons[index] = '撞墙死掉了';
+          snake.dead('撞墙死掉了');
           return;
         }
 
         // 撞墙死
         if (this.points[newHeader.x][newHeader.y].type === 3) {
-          snake.dead();
-          reasons[index] = '撞石头死掉了';
+          snake.dead('撞石头死掉了');
           return;
         }
 
         this.points[newHeader.x][newHeader.y].setType(index+1);
-        if (!isGrow) {
-          this.points[oldTail.x][oldTail.y].setType(0);
-        }
       }
     });
 
@@ -93,8 +91,7 @@ class Maps {
         // 是否撞其他蛇
         for (let { x, y } of source.getBody()) {
           if (targetHeader.x === x && targetHeader.y === y) {
-            this.snakes[i].dead();
-            reasons[i] = '撞到别人死掉了';
+            this.snakes[i].dead('撞到别人死掉了');
             break;
           }
         }
@@ -103,6 +100,7 @@ class Maps {
     }
 
     let survivors = [];
+    let reasons = this.snakes.map((snake) => snake.reason);
     console.log(this.snakes);
     this.snakes.forEach((snake, index) => {
       if (snake.isAlive()) survivors.push(index);

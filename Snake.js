@@ -4,6 +4,7 @@ const directX = [ 0, 0, 1, 0, -1 ];
 class Snake {
   body = []; // [{x: 0, y: 0}]
   status = 'alive';
+  reason = '';
 
   constructor({ x, y }) {
     this.body.push({ x, y });
@@ -22,7 +23,7 @@ class Snake {
     // 自己撞自己
     for (let { x, y } of this.body) {
       if (newHeader.x === x && newHeader.y === y) {
-        this.dead();
+        this.dead('撞上自己了');
         return false;
       }
     }
@@ -35,7 +36,8 @@ class Snake {
     return { newHeader, oldTail };
   }
 
-  dead() {
+  dead(reason) {
+    this.reason = reason;
     this.status = 'dead';
   }
 
@@ -49,6 +51,10 @@ class Snake {
 
   getBody() {
     return this.body;
+  }
+
+  getReason() {
+    return this.reason;
   }
 }
 
