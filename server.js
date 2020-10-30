@@ -65,9 +65,9 @@ function initAdmin(adminSocket) {
       if (Number(index) === 0) {
         mapInfo = { width: 10, height: 10 };
       } else if (Number(index) === 1) {
-        mapInfo = { width: 10, height: 10, stones: [{"x":7,"y":2},{"x":2,"y":7},{"x":1,"y":5},{"x":8,"y":4},{"x":1,"y":6},{"x":8,"y":3}] };
+        mapInfo = { width: 10, height: 10, stones: [{"x":2,"y":7},{"x":7,"y":2},{"x":7,"y":4},{"x":2,"y":5},{"x":3,"y":7},{"x":6,"y":2}] };
       } else if (Number(index) === 2) {
-        mapInfo = { width: 20, height: 20, stones: [{"x":5,"y":8},{"x":14,"y":11},{"x":1,"y":17},{"x":18,"y":2},{"x":11,"y":7},{"x":8,"y":12},{"x":12,"y":6},{"x":7,"y":13},{"x":4,"y":15},{"x":15,"y":4},{"x":10,"y":7},{"x":9,"y":12},{"x":8,"y":1},{"x":11,"y":18},{"x":14,"y":1},{"x":5,"y":18},{"x":10,"y":9},{"x":9,"y":10},{"x":17,"y":17},{"x":2,"y":2}] };
+        mapInfo = { width: 20, height: 20, stones: [{"x":10,"y":4},{"x":9,"y":15},{"x":11,"y":12},{"x":8,"y":7},{"x":5,"y":6},{"x":14,"y":13},{"x":15,"y":6},{"x":4,"y":13},{"x":17,"y":11},{"x":2,"y":8},{"x":6,"y":1},{"x":13,"y":18},{"x":13,"y":9},{"x":6,"y":10},{"x":15,"y":7},{"x":4,"y":12},{"x":14,"y":15},{"x":5,"y":4},{"x":7,"y":8},{"x":12,"y":11},{"x":1,"y":9},{"x":18,"y":10},{"x":16,"y":12},{"x":3,"y":7},{"x":2,"y":1},{"x":17,"y":18},{"x":6,"y":14},{"x":13,"y":5}] };
       }
     }
     if (!playerOne || !playerTwo) {
@@ -223,7 +223,7 @@ function echoGames(socket) { // 输出所有比赛情况
 // app.use(bodyParser());
 
 // app.use(router.routes()).use(router.allowedMethods());
-server.listen(3000);
+server.listen(3333);
 
 
 
