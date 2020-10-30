@@ -91,7 +91,6 @@ function initAdmin(adminSocket) {
       return function(params) {
         // 佳生测试1号-佳生测试2号-0-1-1
         let actionKey = `${gameKey}-${params.round}-${playerIndex}`;
-        delete params.round;
 
         return new Promise(resolve => {
           socket.send(JSON.stringify({
